@@ -16,6 +16,8 @@
 				.then((response) => response.json())
 				.then((data) => {
 					if (data.error) {
+						document.getElementById("error").innerHTML =
+							`<li>Ошибка обновления QR-кода: ${JSON.stringify(data.error)}</li>`;
 						throw new Error(data.error);
 					}
 					console.log(data);
