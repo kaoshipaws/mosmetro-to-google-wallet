@@ -88,9 +88,12 @@ router.get("/ticket/qr/update/:uuid/:id", async (req, res) => {
 		if (!uuid) throw new Error("UUID is required");
 		if (!id) throw new Error("ID is required");
 
+		const oneMinute = 60 * 1000;
+
 		const findclient = ConfigQuery("clients").where("uuid", uuid).first();
 		const finddevice = ConfigFind("devices", findclient.data.device_id);
-		const findclientcard = ConfigQuery("clients").where("wallet.card", id).first();
+		const walletArray = Object.values(findclient.data?.wallet || {});
+		const findclientcard = walletArray.find(w => w.card == id);
 
 		if (!findclientcard) {
 			throw new Error("Такой карты не существует")
@@ -218,20 +221,18 @@ router.get("/ticket/qr/update/:uuid/:id", async (req, res) => {
 				})),
 				barcode: {
 					type: "QR_CODE",
-					value: code.qrData,
+					value: qr.qrData,
 					alternateText: `Valid until ${new Date(Date.now() + oneMinute).toLocaleTimeString("ru-RU")}`
 				},
 			}
 		);
-		const responseUpdateClassCard = await UpdateClassTicket(findclientcard.class,
+		const responseUpdateClassCard = await UpdateClassTicket(findclientcard.linked,
 			{
 				securityAnimation: {
 					animationType: "FOIL_SHIMMER"
 				},
 			}
 		);
-
-		const oneMinute = 60 * 1000;
 
 		NeedUpdateCardTimeout[id] = setTimeout(async () => {
 			await UpdateTicket(findclientcard.object,
@@ -259,7 +260,7 @@ router.get("/ticket/qr/update/:uuid/:id", async (req, res) => {
 					}
 				}
 			);
-			await UpdateClassTicket(findclientcard.class,
+			await UpdateClassTicket(findclientcard.linked,
 				{
 					securityAnimation: null
 				}
@@ -267,11 +268,9 @@ router.get("/ticket/qr/update/:uuid/:id", async (req, res) => {
 			console.log(`🍵 QR-код истёк`);
 		}, oneMinute);
 
-		clearInterval(tickCounter);
-
 		res.json({
 			success: true,
-			data: code,
+			data: qr,
 			dataUpdate: responseUpdateCard,
 			dataUpdateClass: responseUpdateClassCard,
 			dataCard: responseDataCard,
