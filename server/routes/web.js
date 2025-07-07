@@ -30,4 +30,14 @@ router.get("/{:uuid}", (req, res) => {
 	}
 });
 
+router.get("/update/{:uuid}/{:cardid}", (req, res) => {
+	try {
+		const { uuid, cardid } = req.params;
+		res.render("qr", { uuid, cardid });
+	} catch (error) {
+		res.status(500).json({ error: `WEB_ERROR : ${error.message}` });
+		ErrorHandler(error, "Внутренняя ошибка сервера");
+	}
+});
+
 export default router;

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8" />
+		<title>QR-pass update</title>
+	</head>
+	<body>
+		<script>
+			// setTimeout(() => {
+				// window.close();
+			// }, 1000);
+			
+			const uuid = <%- JSON.stringify(uuid) %>;
+			const id = <%- JSON.stringify(cardid) %>;
+
+			// fetch(`/api/googlewallet/ticket/qr/update/${window.__db__.uuid}/${idcard}`)
+				// .then((response) => response.json())
+				// .then((data) => {
+					// if (data.error) {
+						// throw new Error(data.error);
+					// }
+					// console.log(data);
+					// document.getElementById("error").innerHTML =
+						// `<li>QR-код обновлён</li>`;
+				// })
+				// .catch((error) => {
+					// document.getElementById("error").innerHTML =
+						// `<li>Ошибка обновления QR-кода</li>`;
+					// console.error("Ошибка:", error);
+				// });
+		</script>
+	</body>
+	<style>
+		html {
+			color-scheme: light dark;
+		}
+	</style>
+</html>
