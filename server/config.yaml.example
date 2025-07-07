@@ -1,0 +1,47 @@
+mosmetro:
+  client_id: 0
+  client_secret: 0
+clients:
+    uuid: 51a5fe40-b4f9-451b-ae99-25fc37442965
+    device_id: 9a8f66a31d11ddd7
+    otp:
+      key: CfDJ8I8cE5aFWo5DhzU2cdofcpN-tn7YXbTR3uixFtMp_798gcfuFtYjARvBDLT_zmsVqRBU04W4VBZIaKPVdNZTw7i594N7tJe-8QMPoV6_Dj7VFBaQG1Kxe-J75Kwz8n_HPnROap_UPyIllFHmuqzdh9y96jacofi2T6J65RsDWzEyL9eTZhMpxxM6QTcPrxuyq7jBl4n99ttH-YIbm5brJ18
+      password_parameters:
+        attempt_count: 5
+        expires_in: 300
+        length: 6
+      retries_in: 300
+      user_registered: false
+    auth:
+      id_token: eyJhbGciOiJSUzI1NiIsImtpZCI6IkVBQjkyNDEyOUM5NkMyQUI4RjE5QjE3RTUwMkMyRjkyQUI5REE5NkRSUzI1NiIsInR5cCI6IkpXVCIsIng1dCI6IjZya2tFcHlXd3F1UEdiRi1VQ3d2a3F1ZHFXMCJ9.eyJuYmYiOjE3NTE5MDQwMTAsImV4cCI6MTc1MTkwNDMxMCwiaXNzIjoiaHR0cHM6Ly9hdXRoLm1vc21ldHJvLnJ1IiwiYXVkIjoiZjljM2M4NTktOTc3YS00ZWI3LTliY2UtNDM2OTk2NGRmODU1IiwiaWF0IjoxNzUxOTA0MDEwLCJhdF9oYXNoIjoiZ05QSENjOEtPTnRzQVc4SHBHajVTZyIsInN1YiI6IjEwMzUzNzUyOSIsImF1dGhfdGltZSI6MTc1MTkwMjc4MiwiaWRwIjoibG9jYWwiLCJhbXIiOlsib3RwIl19.d6wWqd5G0iUToT4-Kwz_ZOJR2r8v3t-DeD3ZIOn-ulloqxVA1OtdAPgLdyBuAY3mxJhvGkbZ-gdobFt_yG_7a21bB6V9HcEaJKKrOJv31WobG2v1jMnRsom0O_YM8oKKItDo0mjKHByxX-8ojqe3qXZMAJHkJbw2BnC5OyLD4ZNek6CHIcFfbvF6B06iz8ywUY2swZmXlYUVVc6963mGO7QC1XJ84GrgqbRF_YdspCZ7l4JglmbfTyzIwS02JBW-FhhBA7um8IMDsiH7wKvCmnOTt7ik9I2n76P64KGg5l6l8c7LGrsxnbOY4NbbTeMzl9KcdaZCex2cdH6plbJHYQ
+      access_token: 8C9A5609DD2A9309A1F9E5BC631DDD09FB553FB46A9BA72528717F6E4693C66C
+      expires_in: 3600
+      token_type: Bearer
+      refresh_token: 14BD24BF1468DF5BB1909BE52F4299EA1211B5C0ED5348F58D48088E2C24A27E
+      scope: all email idps nbs.ppa openid phone offline_access
+    info:
+      userId: "103537529"
+      userName: "79363132296"
+      birthDate: ""
+      gender: None
+      phone: "79363132296"
+      hasPassword: false
+      settings:
+        notificationChannels:
+          - id: "1"
+            name: Разрешить пуш-уведомления
+            description: Получение пуш-уведомлений доступно только в мобильном приложении
+            enabled: true
+          - id: "2"
+            name: По электронной почте
+            description: ""
+            enabled: true
+        notificationTypes: []
+      facePayRegistered: false
+      maasRegistered: false
+      editable: true
+    linked:
+      cards: []
+      waitingLinkCards: []
+      bankCards: []
+devices:

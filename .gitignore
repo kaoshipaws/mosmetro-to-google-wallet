@@ -1,0 +1,7 @@
+node_modules/
+.file-status/
+.vscode/
+.env
+server/config.yaml
+server/external.js
+server-copy.js

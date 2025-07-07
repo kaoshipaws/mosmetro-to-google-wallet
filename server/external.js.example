@@ -1,0 +1,217 @@
+import { LoyaltyClient } from "../lib/esm/loyalty.js";
+import dotenv from "dotenv";
+dotenv.config();
+import yaml from "yaml";
+import fs from "fs";
+
+export let APPLICATION_PROXY_URL = "https://your-proxy.url/proxy";
+export let APPLICATION_CONFIG = {};
+export let GOOGLE_APPLICATION_CREDENTIALS = {};
+
+export let GOOGLE_APPLICATION_LOYALTY = new LoyaltyClient({});
+export let GOOGLE_APPLICATION_ISSUER_ID = process.env.ISSUER_ID;
+
+export function ConfigInit() {
+	try {
+		GOOGLE_APPLICATION_CREDENTIALS = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+		GOOGLE_APPLICATION_LOYALTY = new LoyaltyClient(GOOGLE_APPLICATION_CREDENTIALS);
+		console.log(`💻 Google Cloud Console загружен из .env`);
+	} catch (error) {
+		ErrorHandler(error, "Ошибка загрузки конфигурации : .env");
+		process.exit(1);
+	}
+	try {
+		const configFile = fs.readFileSync("./server/config.yaml", "utf8");
+		APPLICATION_CONFIG = yaml.parse(configFile);
+		console.log(`📁 Конфигурация mosmetro.ru загружена из config.yaml`);
+	} catch (error) {
+		ErrorHandler(error, "Ошибка загрузки конфигурации : config.yaml");
+		process.exit(1);
+	}
+}
+
+export function ConfigSave() {
+	try {
+		const yamlStr = yaml.stringify(APPLICATION_CONFIG);
+		fs.writeFileSync("./server/config.yaml", yamlStr, "utf8");
+		return true;
+	} catch (error) {
+		return ErrorHandler(error, "Ошибка при сохранении конфигурации");
+	}
+}
+
+// export function ConfigUpdate(section, key, value) {
+// 	try {
+// 		if (!key) {
+// 			console.error("Ключ не может быть пустым");
+// 			return false;
+// 		}
+
+// 		APPLICATION_CONFIG[section] = APPLICATION_CONFIG[section] || {};
+// 		APPLICATION_CONFIG[section][key] = value;
+
+// 		const success = ConfigSave();
+
+// 		if (success) {
+// 			console.log(`✅ Ключ "${key}" добавлен в раздел "${section}".`);
+// 		}
+// 		return success;
+// 	} catch (error) {
+// 		return ErrorHandler(error, "Ошибка при обновлении конфигурации");
+// 	}
+// }
+
+export function ConfigAdd(section, key, value) {
+	try {
+		if (!key) {
+			console.error("Ключ не может быть пустым");
+			return false;
+		}
+
+		APPLICATION_CONFIG[section] = APPLICATION_CONFIG[section] || {};
+
+		if (APPLICATION_CONFIG[section].hasOwnProperty(key)) {
+			console.warn(`⚠️ Ключ "${key}" уже существует в разделе "${section}".`);
+			return false;
+		}
+
+		APPLICATION_CONFIG[section][key] = value;
+
+		const success = ConfigSave();
+
+		if (success) {
+			console.log(`✅ Ключ "${key}" добавлен в раздел "${section}".`);
+		}
+
+		return success;
+	} catch (error) {
+		return ErrorHandler(error, "Ошибка при добавлении конфигурации");
+	}
+}
+
+export function ConfigUpdate(section, key, value) {
+	try {
+		if (!key) {
+			console.error("Ключ не может быть пустым");
+			return false;
+		}
+
+		APPLICATION_CONFIG[section] = APPLICATION_CONFIG[section] || {};
+
+		const isUpdate = APPLICATION_CONFIG[section].hasOwnProperty(key);
+
+		if (!isUpdate) {
+			APPLICATION_CONFIG[section][key] = {};
+		}
+		
+		const newData = {
+			...APPLICATION_CONFIG[section][key],
+			...value
+		};
+
+		APPLICATION_CONFIG[section][key] = newData;
+
+		const success = ConfigSave();
+
+		if (success) {
+			if (isUpdate) {
+				console.warn(`✒️ Ключ "${key}" обновлён в разделе "${section}".`);
+			} else {
+				console.log(`✅ Ключ "${key}" добавлен в раздел "${section}".`);
+			}
+		}
+
+		return success;
+	} catch (error) {
+		return ErrorHandler(error, "Ошибка при добавлении конфигурации");
+	}
+}
+
+export function ConfigFind(section, key) {
+	try {
+		if (!section || !key) {
+			console.error("Секция и ключ не могут быть пустыми");
+			return null;
+		}
+
+		if (!APPLICATION_CONFIG[section]) {
+			return null;
+		}
+
+		return APPLICATION_CONFIG[section][key] || null;
+	} catch (error) {
+		ErrorHandler(error, "Ошибка при получении конфигурации");
+		return null;
+	}
+}
+
+export function ConfigQuery(section) {
+	try {
+		if (!section) {
+			console.error("Секция не может быть пустой");
+			return null;
+		}
+
+		const sectionData = APPLICATION_CONFIG[section];
+
+		if (!sectionData) {
+			return null;
+		}
+
+		let lastResult = null;
+
+		return {
+			data: sectionData,
+
+			where(path, value) {
+				const result = {};
+
+				for (const [key, entry] of Object.entries(sectionData)) {
+					const nestedValue = path.split('.').reduce((acc, part) => acc?.[part], entry);
+					if (nestedValue === value) {
+						result[key] = entry;
+					}
+				}
+
+				lastResult = result;
+				return this; // для чейнинга
+			},
+
+			first() {
+				if (!lastResult || Object.keys(lastResult).length === 0) {
+					return null;
+				}
+
+				const firstKey = Object.keys(lastResult)[0];
+				return {
+					key: firstKey,
+					data: lastResult[firstKey]
+				};
+			}
+		};
+	} catch (error) {
+		ErrorHandler(error, "Ошибка при получении конфигурации");
+		return null;
+	}
+}
+
+export function ErrorHandler(error, info) {
+	console.error("❌ Ошибка:", error.message);
+	if (info) {
+		console.error("ℹ️ Дополнительная информация:");
+		console.error("   Сообщение:", info);
+	}
+	console.error("📋 Детали ошибки:");
+	console.error("   Обьект:", error);
+
+	return false;
+}
+
+// Deprecation
+export function saveConfig() {
+	ConfigSave()
+}
+// Deprecation
+export function loadConfig() {
+	ConfigInit()
+}

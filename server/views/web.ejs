@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Профиль</title>
+	</head>
+	<body>
+		<ul id="error"></ul>
+
+		<% if (key) { %>
+
+		<h1>Профиль</h1>
+		<p>Имя: <%= key %></p>
+		<ul id="cards">
+			<% data.linked?.cards.forEach(card => { %>
+				<li>
+					<p><%= card.card.displayName %></p>
+					<p><%= card.card.cardNumber %></p>
+					<%
+						const walletArray = Object.values(data.wallet || {});
+						const isLinked = walletArray.some(w => w.card == card.card.linkedCardId);
+					%>
+					<% if (card.virtualCardInfo.device.id != data.device_id) { %>
+						<button type="button" onclick="TransferCard('<%= card.card.linkedCardId %>')">Связать</button>
+					<% } else if (!isLinked) { %>
+						<button type="button" onclick="CreateGoogleWallet('<%= card.card.linkedCardId %>', this)">Создать Wallet</button>
+					<% } else { %>
+						<button type="button" onclick="CreateGoogleWallet('<%= card.card.linkedCardId %>', this)">Перевыпустить Wallet</button>
+						<button type="button" onclick="UpdateQRCode('<%= card.card.linkedCardId %>')">Обновить QR</button>
+					<% } %>
+				</li>
+			<% }); %>
+		</ul>
+		<button type="button" onclick="CardsList()">Обновить список карт</button>
+		<button type="button" onclick="RefreshToken()">Обновить токен</button>
+
+		<script>
+			window.__db__ = <%- JSON.stringify(data) %>;
+
+			function UpdateQRCode(idcard) {
+				fetch(`/api/googlewallet/ticket/qr/update/${window.__db__.uuid}/${idcard}`)
+					.then((response) => response.json())
+					.then((data) => {
+						if (data.error) {
+							throw new Error(data.error);
+						}
+						console.log(data);
+						document.getElementById("error").innerHTML =
+							`<li>QR-код обновлён</li>`;
+					})
+					.catch((error) => {
+						document.getElementById("error").innerHTML =
+							`<li>Ошибка обновления QR-кода</li>`;
+						console.error("Ошибка:", error);
+					});
+			}
+
+			function CreateGoogleWallet(idcard, button) {
+				fetch(`/api/googlewallet/ticket/create/${window.__db__.uuid}/${idcard}`)
+					.then((response) => response.json())
+					.then((data) => {
+						if (data.error) {
+							throw new Error(data.error);
+						}
+						console.log(data);
+
+						const link = document.createElement('a');
+
+						link.href = data.wallet.url;
+						link.target = "_blank";
+						link.innerHTML = `
+							<img src="/addtowallet.svg" height="40" alt="">
+						`;
+						button.replaceWith(link);
+					})
+					.catch((error) => {
+						document.getElementById("error").innerHTML =
+							`<li>Ошибка загрузки</li>`;
+						console.error("Ошибка:", error);
+					});
+			}
+
+			function TransferCard(idcard) {
+				fetch(`/api/account/mosmetro/transfer/${window.__db__.auth.access_token}/${idcard}`)
+					.then((response) => response.json())
+					.then((data) => {
+						if (data.error) {
+							throw new Error(data.error);
+						}
+						console.log(data);
+						location.pathname = `/web/${window.__db__.uuid}`;
+					})
+					.catch((error) => {
+						document.getElementById("error").innerHTML =
+							`<li>Ошибка загрузки</li>`;
+						console.error("Ошибка:", error);
+					});
+			}
+
+			function CardsList() {
+				fetch(`/api/account/mosmetro/linked/${window.__db__.auth.access_token}`)
+					.then((response) => response.json())
+					.then((data) => {
+						if (data.error) {
+							throw new Error(data.error);
+						}
+						console.log(data);
+						const cards = data.linked.data.cards;
+						const cardscontainer = document.getElementById("cards");
+						cardscontainer.innerHTML = "";
+
+						cards.forEach(card => {
+							const li = document.createElement("li");
+
+							li.innerHTML = `
+								<p>${card.card.displayName}</p>
+								<p>${card.card.cardNumber}</p>
+							`;
+
+							if (card.virtualCardInfo.device.id !== window.__db__.device_id) {
+								const button = document.createElement("button");
+								button.type = "button";
+								button.textContent = "Связать";
+								button.onclick = () => TransferCard(card.card.linkedCardId);
+								li.appendChild(button);
+							}
+
+							cardscontainer.appendChild(li);
+						});
+
+					})
+					.catch((error) => {
+						document.getElementById("error").innerHTML =
+							`<li>Ошибка загрузки</li>`;
+						console.error("Ошибка:", error);
+					});
+			}
+			function RefreshToken() {
+				fetch(`/api/device/mosmetro/connect/${window.__db__.uuid}`)
+					.then((response) => response.json())
+					.then((data) => {
+						if (data.error) {
+							throw new Error(data.error);
+						}
+						location.pathname = `/web/${window.__db__.uuid}`;
+					})
+					.catch((error) => {
+						document.getElementById("error").innerHTML =
+							`<li>Ошибка загрузки</li>`;
+						console.error("Ошибка:", error);
+					});
+			}
+		</script>
+
+		<% } else { %>
+
+		<div id="container">
+			<h1>Вход</h1>
+			<form id="auth" onsubmit="event.preventDefault();">
+				<label for="username">Номер:</label>
+				<input type="text" id="username" name="username" required />
+				<button type="submit">Отправить код</button>
+			</form>
+		</div>
+
+		<script>
+			window.__db__ = {};
+			const container = document.getElementById("container");
+
+			function FormPassSubmit(event) {
+				const context = this;
+				window.__db__.password = document.getElementById("password").value;
+
+				fetch(`/api/device/mosmetro/connect/token/${window.__db__.key}/${window.__db__.password}`)
+					.then((response) => response.json())
+					.then((data) => {
+						if (data.error) {
+							throw new Error(data.error);
+						}
+						console.log(data);
+
+						fetch(`/api/account/mosmetro/info/${data.client.auth.access_token}`)
+							.then((response) => response.json())
+							.then((data) => {
+								if (data.error) {
+									throw new Error(data.error);
+								}
+								console.log(data);
+								location.pathname = `/web/${data.client.uuid}`;
+							})
+							.catch((error) => {
+								document.getElementById("error").innerHTML =
+									`<li>Ошибка загрузки</li>`;
+								console.error("Ошибка:", error);
+							});
+
+					})
+					.catch((error) => {
+						document.getElementById("error").innerHTML =
+							`<li>Ошибка загрузки</li>`;
+						console.error("Ошибка:", error);
+					});
+			}
+			function FormAuthSubmit(event) {
+				const context = this;
+				window.__db__.username = document.getElementById("username").value;
+
+				fetch(`/api/device/mosmetro/connect/otp/${window.__db__.username}`)
+					.then((response) => response.json())
+					.then((data) => {
+						if (data.error) {
+							throw new Error(data.error);
+						}
+
+						const otp = data.client.otp;
+						window.__db__.key = otp.key;
+
+						container.innerHTML = `
+							<h1>Подтверждение</h1>
+							<form id="pass" onsubmit="event.preventDefault();">
+								<p>Код отправлен на номер: <strong>${window.__db__.username}</strong></p>
+								<label for="password">Введите код:</label>
+								<input type="text" id="password" maxlength="${otp.password_parameters.length}" name="password" required />
+								<button type="submit">Подтвердить</button>
+							</form>
+						`;
+						
+						document.getElementById("pass").addEventListener("submit", function(event) {
+							event.preventDefault();
+							FormPassSubmit.call(this, event);
+						});
+					})
+					.catch((error) => {
+						document.getElementById("error").innerHTML =
+							`<li>Ошибка загрузки</li>`;
+						console.error("Ошибка:", error);
+					});
+			}
+		
+			document.getElementById("auth").addEventListener("submit", function(event) {
+				event.preventDefault();
+				FormAuthSubmit.call(this, event);
+			});
+		</script>
+
+		<% } %>
+
+		<style>
+			body, form {
+				display: flex;
+				flex-direction: column;
+				width: 300px;
+				/* margin: 0 auto; */
+				gap: 10px;
+			}
+			p { 
+				margin: 0;
+			}
+			.button-wallet {
+				&:hover {
+					cursor: pointer;
+				}
+			}
+		</style>
+	</body>
+</html>
