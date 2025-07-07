@@ -67,7 +67,7 @@ proxy.use(express.json());
 proxy.use(express.urlencoded({ extended: true }));
 proxy.use(express.text());
 
-app.all("/proxy", (req, res) => {
+proxy.all("/proxy", (req, res) => {
 	console.log("📥 Request:", req.method, req.headers["target-url"]);
 
 	// --- CORS headers --- //
