@@ -234,6 +234,8 @@ router.get("/ticket/qr/update/:uuid/:id", async (req, res) => {
 			}
 		);
 
+		clearTimeout(NeedUpdateCardTimeout[id]);
+
 		NeedUpdateCardTimeout[id] = setTimeout(async () => {
 			await UpdateTicket(findclientcard.object,
 				{
