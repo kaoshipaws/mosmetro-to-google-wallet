@@ -238,16 +238,16 @@ router.get("/ticket/qr/update/:uuid/:id", async (req, res) => {
 			await UpdateTicket(findclientcard.object,
 				{
 					loyaltyPoints: {
-						label: "The QR-pass needs to be updated (⋮)",
+						label: "The QR-pass needs to be updated",
 						localizedLabel: {
 							defaultValue: {
 								language: "en-US",
-								value: "The QR-pass needs to be updated (⋮)"
+								value: "The QR-pass needs to be updated"
 							},
 							translatedValues: [
 								{
 									language: "ru-RU",
-									value: "Необходимо обновить QR-код (⋮)"
+									value: "Необходимо обновить QR-код"
 								}
 							]
 						},
@@ -439,7 +439,7 @@ async function CreateWalletCard(uuid, cardid) {
 			linksModuleData: {
 				uris: [
 					{
-						uri: `https://97497.zetalink.ru/api/googlewallet/ticket/qr/update/${uuid}/${cardid}`,
+						uri: `https://97497.zetalink.ru/web/update/${uuid}/${cardid}`,
 						description: "Reissue QR-pass",
 						localizedDescription: {
 							defaultValue: {
