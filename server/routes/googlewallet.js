@@ -82,6 +82,22 @@ router.post("/ticket/update/:uuid/:id", async (req, res) => {
 
 let NeedUpdateCardTimeout = {};
 
+// Версия для Node.js
+function processQrDataNode(qrDataFromApi) {
+    try {
+        // Декодируем Base64 в Buffer
+        const decodedBuffer = Buffer.from(qrDataFromApi, 'base64');
+        
+        // Преобразуем в UTF-8 строку
+        const finalQrContent = decodedBuffer.toString('utf-8');
+        
+        return finalQrContent;
+    } catch (error) {
+        console.error('Ошибка декодирования qrData:', error);
+        throw new Error('Не удалось декодировать qrData');
+    }
+}
+
 router.get("/ticket/qr/update/:uuid/:id", async (req, res) => {
 	try {
 		const { uuid, id } = req.params;
@@ -221,7 +237,7 @@ router.get("/ticket/qr/update/:uuid/:id", async (req, res) => {
 				})),
 				barcode: {
 					type: "QR_CODE",
-					value: qr.qrData,
+					value: processQrDataNode(qr.qrData),
 					alternateText: `Valid until ${new Date(Date.now() + oneMinute).toLocaleTimeString("ru-RU")}`
 				},
 			}
@@ -325,7 +341,7 @@ async function UpdateClassTicket(classId, updateData) {
 };
 
 async function CreateWalletCard(uuid, cardid) {
-	
+
 	try {
 		console.log("🔄️ Создаем новый билет в Google Wallet...");
 		const cardPrefix = "CARD_" + cardid;
@@ -348,7 +364,7 @@ async function CreateWalletCard(uuid, cardid) {
 			},
 			hexBackgroundColor: "#000000",
 			// securityAnimation: {
-				// animationType: "FOIL_SHIMMER"
+			// animationType: "FOIL_SHIMMER"
 			// },
 			multipleDevicesAndHoldersAllowedStatus: "ONE_USER_ALL_DEVICES",
 			localizedIssuerName: {
