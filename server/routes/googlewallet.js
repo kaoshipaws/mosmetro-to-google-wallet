@@ -82,20 +82,23 @@ router.post("/ticket/update/:uuid/:id", async (req, res) => {
 
 let NeedUpdateCardTimeout = {};
 
-// Версия для Node.js
-function processQrDataNode(qrDataFromApi) {
-    try {
-        // Декодируем Base64 в Buffer
-        const decodedBuffer = Buffer.from(qrDataFromApi, 'base64');
-        
-        // Преобразуем в UTF-8 строку
-        const finalQrContent = decodedBuffer.toString('utf-8');
-        
-        return finalQrContent;
-    } catch (error) {
-        console.error('Ошибка декодирования qrData:', error);
-        throw new Error('Не удалось декодировать qrData');
-    }
+function processQrData(qrDataFromApi) {
+	try {
+		const binaryString = atob(qrDataFromApi);
+		const bytes = new Uint8Array(binaryString.length);
+		
+		for (let i = 0; i < binaryString.length; i++) {
+			bytes[i] = binaryString.charCodeAt(i);
+		}
+
+		const decoder = new TextDecoder('utf-8');
+		const finalQrContent = decoder.decode(bytes);
+		
+		return finalQrContent;
+	} catch (error) {
+		console.error('Ошибка декодирования qrData:', error);
+		throw new Error('Не удалось декодировать qrData');
+	}
 }
 
 router.get("/ticket/qr/update/:uuid/:id", async (req, res) => {
@@ -237,7 +240,7 @@ router.get("/ticket/qr/update/:uuid/:id", async (req, res) => {
 				})),
 				barcode: {
 					type: "QR_CODE",
-					value: processQrDataNode(qr.qrData),
+					value: processQrData(qr.qrData),
 					alternateText: `Valid until ${new Date(Date.now() + oneMinute).toLocaleTimeString("ru-RU")}`
 				},
 			}
